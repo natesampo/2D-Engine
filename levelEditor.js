@@ -68,22 +68,51 @@ function launchLevelEditor() {
 		context.webkitImageSmoothingEnabled = false;
 
 		let buttons = [];
+		let buttonsLength = 0;
 		buttons.push(new UIButton(canvas.width - 80, 16, 64, 64, undefined, 'Tile', function() {
 			if (!this.extended) {
 				let spriteCanvi = document.getElementsByClassName('spriteCanvas');
 				for (var i=0; i<spriteCanvi.length; i++) {
-					buttons.push(new UIButton(canvas.width - 148, 16 + 64*i, 64, 64, spriteCanvi[i], spriteCanvi[i].id, function() {
-						buttons[0].extended = false;
+					buttons.push(new UIButton(canvas.width - 148, 16 + 66*i, 64, 64, spriteCanvi[i], spriteCanvi[i].id, function() {
 						buttons[0].img = this.img;
-						buttons.length = 1;
+						buttons[0].extended = false;
+						buttons.length = buttonsLength;
 					}));
 				}
+				buttons.push(new UIButton(canvas.width - 148, 16 + 66*spriteCanvi.length, 64, 64, undefined, 'New Sprite', function() {
+					let input = document.getElementById('inputButton');
+					let onUpload = function(event) {
+						let img = new Image();
+						img.onload = function() {
+							let canvas = document.createElement('canvas');
+							canvas.classList.add('spriteCanvas');
+							canvas.id = input.files[0].name;
+							canvas.width = game.screens[0].level.tileSize;
+							canvas.height = game.screens[0].level.tileSize;
+							document.head.appendChild(canvas);
+
+							let context = canvas.getContext('2d');
+							context.imageSmoothingEnabled = false;
+							context.drawImage(img, 0, 0, game.screens[0].level.tileSize, game.screens[0].level.tileSize);
+							game.screens[0].level.addSprite(input.files[0].name, canvas, 1);
+							buttons[0].img = canvas;
+						}
+						img.src = URL.createObjectURL(input.files[0]);
+						input.removeEventListener('change', onUpload);
+					};
+					input.addEventListener('change', onUpload);
+					input.click();
+
+					buttons[0].extended = false;
+					buttons.length = buttonsLength;
+				}));
 				this.extended = true;
 			} else {
-				buttons.length = 1;
+				buttons.length = buttonsLength;
 				this.extended = false;
 			}
 		}));
+		buttonsLength = buttons.length;
 
 		game.screens.push(new Screen(canvas, context, 0, 0, 1, 1, level, new Camera(0, 0, 0, canvas.width/canvas.height, 1), buttons));
 		addMouseWheelListener(function(sign) {game.screens[0].camera.zoom(sign, game.screens[0].camera.x + (canvas.width/level.tileSize)/2, game.screens[0].camera.y + (canvas.height/level.tileSize)/2);});

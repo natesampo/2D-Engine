@@ -61,6 +61,10 @@ class Level {
 		}
 	}
 
+	addSprite(name, canvas, frames) {
+		this.sprites[name] = [canvas, frames];
+	}
+
 	addObject(obj) {
 		if (obj instanceof Tile) {
 			if (this.map[obj.x] && this.map[obj.x][obj.y]) {
