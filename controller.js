@@ -10,16 +10,15 @@ function addKeyUpListener(inputs) {
 	});
 }
 
-function addMouseDownListener(inputs) {
-	inputs['mousedown'] = [];
+function addMouseDownListener(func) {
 	document.addEventListener('mousedown', function(event) {
-		inputs['mousedown'].push(event.which);
+		func(event.which, event.clientX, event.clientY);
 	});
 }
 
-function addMouseUpListener(inputs) {
+function addMouseUpListener(func) {
 	document.addEventListener('mouseup', function(event) {
-		inputs['mousedown'] = [];
+		func(event.which, event.clientX, event.clientY);
 	});
 }
 

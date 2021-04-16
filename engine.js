@@ -50,17 +50,76 @@ class Camera {
 }
 
 class Level {
-	constructor(color, tileSize, tiles, objects, sprites) {
+	constructor(color, tileSize, objects, sprites) {
 		this.color = color;
 		this.tileSize = tileSize;
-		this.tiles = tiles;
-		this.objects = objects;
 		this.sprites = sprites;
+
+		this.map = {};
+		for (var i=0; i<objects.length; i++) {
+			this.putInMap(objects[i]);
+		}
+	}
+
+	addObject(obj) {
+		if (obj instanceof Tile) {
+			if (this.map[obj.x] && this.map[obj.x][obj.y]) {
+				for (var i=0; i<this.map[obj.x][obj.y].length; i++) {
+					if (this.map[obj.x][obj.y][i] instanceof Tile) {
+						this.map[obj.x][obj.y].splice(i, 1);
+						break;
+					}
+				}
+				this.map[obj.x][obj.y].push(obj);
+			} else {
+				this.putInMap(obj);
+			}
+		} else {
+			this.putInMap(obj);
+		}
+	}
+
+	translateObject(obj, x, y) {
+		let currX = obj.x << 0;
+		let currY = obj.y << 0;
+		obj.translate(x, y);
+		if (obj.x << 0 != currX || obj.y << 0 != currY) {
+			remove(this.map[currX][currY], obj);
+			this.putInMap(obj);
+		}
+	}
+
+	removeFromMap(obj) {
+		remove(this.map[obj.x][obj.y], obj);
+	}
+
+	putInMap(obj) {
+		if (!this.map[obj.x]) {
+			this.map[obj.x] = {};
+		}
+
+		if (this.map[obj.x][obj.y]) {
+			this.map[obj.x][obj.y].push(obj);
+		} else {
+			this.map[obj.x][obj.y] = [obj];
+		}
+	}
+}
+
+class UIButton {
+	constructor(x, y, width, height, img, text, onClick) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.img = img;
+		this.text = text;
+		this.onClick = onClick;
 	}
 }
 
 class Screen {
-	constructor(canvas, context, x, y, width, height, level, camera) {
+	constructor(canvas, context, x, y, width, height, level, camera, ui) {
 		this.canvas = canvas;
 		this.context = context;
 		this.x = x;
@@ -69,6 +128,7 @@ class Screen {
 		this.height = height;
 		this.level = level;
 		this.camera = camera;
+		this.ui = ui;
 	}
 
 	resize(newWidth, newHeight, pageWidth, pageHeight) {
@@ -115,6 +175,7 @@ function loadSprite(sprite, tileSize) {
 						canvas.id = sprite;
 						canvas.width = tileSize;
 						canvas.height = tileSize;
+						document.head.appendChild(canvas);
 
 						let context = canvas.getContext('2d');
 						context.imageSmoothingEnabled = false;
@@ -138,7 +199,6 @@ function loadLevel(level, func) {
 				let levelColor;
 				let tileSize;
 				let objects = [];
-				let tiles = [];
 				let promises = {};
 				let levelText = this.responseText.split('\n');
 				for (var i=0; i<levelText.length; i++) {
@@ -159,7 +219,7 @@ function loadLevel(level, func) {
 							} else if (!sprites[line[1]]) {
 								sprites[line[1]] = sprite;
 							}
-							tiles.push(new Tile(parseInt(line[2]), parseInt(line[3]), line[1], parseFloat(line[4])));
+							objects.push(new Tile(parseInt(line[2]), parseInt(line[3]), line[1], parseFloat(line[4])));
 							break;
 					}
 				}
@@ -170,7 +230,7 @@ function loadLevel(level, func) {
 						sprites[imageDati[i][0]] = [imageDati[i][1], parseInt(imageDati[i][0].split('_')[imageDati[i][0].split('_').length-1])];
 					}
 
-					resolve(new Level(levelColor, tileSize, tiles, objects, sprites));
+					resolve(new Level(levelColor, tileSize, objects, sprites));
 				});
 			}
 		}
@@ -198,23 +258,52 @@ function renderScreen(screen) {
 									level.color['a'] + ')';
 	context.fillRect(0, 0, canvasWidth, canvasHeight);
 
-	for (var i=0; i<level.tiles.length; i++) {
-		let tile = level.tiles[i];
+	let minXPos = camera.x << 0;
+	let maxXPos = camera.x + canvasWidth/tileSize << 0;
+	let minYPos = camera.y << 0;
+	let maxYPos = camera.y + canvasHeight/tileSize << 0;
+	for (var i=minXPos; i<=maxXPos; i++) {
+		if (level.map[i]) {
+			for (var j=minYPos; j<=maxYPos; j++) {
+				if (level.map[i][j]) {
+					for (var k=0; k<level.map[i][j].length; k++) {
+						let obj = level.map[i][j][k];
+						let xPos = (obj.x - camera.x) * tileSize;
+						let yPos = (obj.y - camera.y) * tileSize;
 
-		let xPos = (tile.x - camera.x) * tileSize;
-		let yPos = (tile.y - camera.y) * tileSize;
-		if (xPos < canvasWidth && xPos + tileSize > 0 && yPos < canvasHeight && yPos + tileSize > 0) {
-			let spriteData = level.sprites[tile.sprite];
-			let sprite = spriteData[0];
-			let animationFrames = spriteData[1];
-			let frameSize = sprite.width / animationFrames;
-			if (animationFrames > 0) {
-				context.drawImage(sprite, (tile.animationFrame << 0) * frameSize, 0, frameSize, sprite.height, xPos, yPos, tileSize, tileSize);
-				tile.animationFrame = (tile.animationFrame + tile.animationSpeed) % animationFrames;
-			} else {
-				context.drawImage(sprite, xPos, yPos, tileSize, tileSize);
+						let spriteData = level.sprites[obj.sprite];
+						let sprite = spriteData[0];
+						let animationFrames = spriteData[1];
+						let frameSize = sprite.width / animationFrames;
+						if (animationFrames > 0) {
+							context.drawImage(sprite, (obj.animationFrame << 0) * frameSize, 0, frameSize, sprite.height, xPos, yPos, tileSize, tileSize);
+							obj.animationFrame = (obj.animationFrame + obj.animationSpeed) % animationFrames;
+						} else {
+							context.drawImage(sprite, xPos, yPos, tileSize, tileSize);
+						}
+					}
+				}
 			}
 		}
+	}
+
+	for (var i=0; i<screen.ui.length; i++) {
+		let button = screen.ui[i];
+
+		context.fillStyle = 'rgba(255, 255, 255, 1)';
+		context.lineWidth = 3;
+		context.beginPath();
+		context.rect(button.x, button.y, button.width, button.height);
+		context.stroke();
+		context.fill();
+		context.closePath();
+
+		if (button.img) {
+			context.drawImage(button.img, button.x, button.y, button.width, button.height);
+		}
+
+		context.fillStyle = 'rgba(0, 0, 0, 1)';
+		context.fillText(button.text, button.x, button.y + 8);
 	}
 }
 
@@ -235,8 +324,6 @@ function launchExample() {
 	let game = new Game();
 	addKeyUpListener(game.inputs);
 	addKeyDownListener(game.inputs);
-	addMouseDownListener(game.inputs);
-	addMouseUpListener(game.inputs);
 	preventContextMenu();
 
 	loadLevel('example.lvl', function(level) {
@@ -250,7 +337,7 @@ function launchExample() {
 		context.mozImageSmoothingEnabled = false;
 		context.webkitImageSmoothingEnabled = false;
 
-		game.screens.push(new Screen(canvas, context, 0, 0, 1, 1, level, new Camera(0, 0, 0, canvas.width/canvas.height, 1)));
+		game.screens.push(new Screen(canvas, context, 0, 0, 1, 1, level, new Camera(0, 0, 0, canvas.width/canvas.height, 1), []));
 		addMouseWheelListener(function(sign) {game.screens[0].camera.zoom(sign, game.screens[0].camera.x + (canvas.width/level.tileSize)/2, game.screens[0].camera.y + (canvas.height/level.tileSize)/2);});
 
 		start(game);
