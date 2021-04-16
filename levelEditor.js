@@ -37,7 +37,7 @@ function launchLevelEditor() {
 				}
 			}
 
-			if (!hitButton) {
+			if (!hitButton && game.screens[0].ui[0].img) {
 				game.screens[0].level.addObject(new Tile(tileX, tileY, game.screens[0].ui[0].img.id, 0));
 			}
 		} else if (which == 3) {
@@ -50,7 +50,10 @@ function launchLevelEditor() {
 			}
 
 			if (!hitButton && game.screens[0].level.map[tileX] && game.screens[0].level.map[tileX][tileY]) {
-				game.screens[0].level.map[tileX][tileY] = [];
+				delete game.screens[0].level.map[tileX][tileY];
+				if (Object.values(game.screens[0].level.map[tileX]).length == 0) {
+					delete game.screens[0].level.map[tileX];
+				}
 			}
 		}
 	});
@@ -94,7 +97,7 @@ function launchLevelEditor() {
 							let context = canvas.getContext('2d');
 							context.imageSmoothingEnabled = false;
 							context.drawImage(img, 0, 0, game.screens[0].level.tileSize, game.screens[0].level.tileSize);
-							game.screens[0].level.addSprite(input.files[0].name, canvas, 1);
+							game.screens[0].level.addSprite(input.files[0].name, canvas, parseInt(input.files[0].name.split('_')[input.files[0].name.split('_').length-1]));
 							buttons[0].img = canvas;
 						}
 						img.src = URL.createObjectURL(input.files[0]);
@@ -112,6 +115,18 @@ function launchLevelEditor() {
 				this.extended = false;
 			}
 		}));
+
+		buttons.push(new UIButton(canvas.width - 80, canvas.height - 80, 64, 64, undefined, 'Print Level', function() {
+			let levelString = 'color ' + game.screens[0].level.color['r'] + ' ' + game.screens[0].level.color['g'] + ' ' + game.screens[0].level.color['b'] + ' ' + game.screens[0].level.color['a'] + '\n';
+			levelString += 'tileSize ' + game.screens[0].level.tileSize + '\n';
+			for (var i in game.screens[0].level.map) {
+				for (var j in game.screens[0].level.map[i]) {
+					levelString += game.screens[0].level.map[i][j].toString() + '\n';
+				}
+			}
+			console.log(levelString);
+		}));
+
 		buttonsLength = buttons.length;
 
 		game.screens.push(new Screen(canvas, context, 0, 0, 1, 1, level, new Camera(0, 0, 0, canvas.width/canvas.height, 1), buttons));

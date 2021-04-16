@@ -6,6 +6,10 @@ class Tile {
 		this.animationFrame = 0;
 		this.animationSpeed = animationSpeed ? animationSpeed : 0;
 	}
+
+	toString() {
+		return 't ' + this.sprite + ' ' + this.x.toString() + ' ' + this.y.toString() + ' ' + this.animationSpeed.toString();
+	}
 }
 
 class GameObject {
@@ -20,6 +24,10 @@ class GameObject {
 	translate(x, y) {
 		this.x += x;
 		this.y += y;
+	}
+
+	toString() {
+		return 'o ' + this.sprite + ' ' + this.x.toString() + ' ' + this.y.toString() + ' ' + this.animationSpeed.toString();
 	}
 }
 
@@ -90,11 +98,25 @@ class Level {
 		if (obj.x << 0 != currX || obj.y << 0 != currY) {
 			remove(this.map[currX][currY], obj);
 			this.putInMap(obj);
+			this.checkXYForDeletion(currX, currY);
 		}
 	}
 
 	removeFromMap(obj) {
 		remove(this.map[obj.x][obj.y], obj);
+		this.checkXYForDeletion(obj.x, obj.y);
+	}
+
+	checkXYForDeletion(x, y) {
+		if (this.map[obj.x]) {
+			if (this.map[obj.x][obj.y] && Object.values(this.map[obj.x][obj.y]).length == 0) {
+				delete this.map[obj.x][obj.y];
+			}
+
+			if (Object.values(this.map[obj.x]).length == 0) {
+				delete this.map[obj.x];
+			}
+		}
 	}
 
 	putInMap(obj) {
