@@ -38,7 +38,7 @@ function launchLevelEditor() {
 			}
 
 			if (!hitButton && game.screens[0].ui[0].img) {
-				game.screens[0].level.addObject(new Tile(tileX, tileY, game.screens[0].ui[0].img.id, game.screen[0].ui[0].animationSpeed));
+				game.screens[0].level.addObject(new Tile(tileX, tileY, game.screens[0].ui[0].img.id, game.screens[0].ui[0].animationSpeed));
 			}
 		} else if (which == 3) {
 			for (var i=0; i<game.screens[0].ui.length; i++) {
@@ -80,6 +80,10 @@ function launchLevelEditor() {
 						buttons[0].img = this.img;
 						buttons[0].extended = false;
 						buttons.length = buttonsLength;
+
+						if (parseInt(this.img.id.split('.')[this.img.id.split('.').length-2].split('_')[this.img.id.split('_').length-1]) > 1) {
+							buttons[0].animationSpeed = parseFloat(window.prompt('Animation Speed (frames per tick)', '0'));
+						}
 					}));
 				}
 				buttons.push(new UIButton(canvas.width - 148, 16 + 66*spriteCanvi.length, 64, 64, undefined, 'New Sprite', function() {
@@ -99,9 +103,12 @@ function launchLevelEditor() {
 							context.drawImage(img, 0, 0, game.screens[0].level.tileSize, game.screens[0].level.tileSize);
 							game.screens[0].level.addSprite(input.files[0].name, canvas,
 								parseInt(input.files[0].name.split('.')[input.files[0].name.split('.').length-2].split('_')[input.files[0].name.split('_').length-1]));
-							
+
 							buttons[0].img = canvas;
-							console.log(input.files[0].name.split('.')[input.files[0].name.split('.').length-2].split('_')[input.files[0].name.split('_').length-1]);
+
+							if (game.screens[0].level.sprites[input.files[0].name][1] > 1) {
+								buttons[0].animationSpeed = parseFloat(window.prompt('Animation Speed (frames per tick)', '0'));
+							}
 						}
 						img.src = URL.createObjectURL(input.files[0]);
 						input.removeEventListener('change', onUpload);
