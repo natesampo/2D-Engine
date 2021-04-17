@@ -38,7 +38,7 @@ function launchLevelEditor() {
 			}
 
 			if (!hitButton && game.screens[0].ui[0].img) {
-				game.screens[0].level.addObject(new Tile(tileX, tileY, game.screens[0].ui[0].img.id, 0));
+				game.screens[0].level.addObject(new Tile(tileX, tileY, game.screens[0].ui[0].img.id, game.screen[0].ui[0].animationSpeed));
 			}
 		} else if (which == 3) {
 			for (var i=0; i<game.screens[0].ui.length; i++) {
@@ -97,8 +97,11 @@ function launchLevelEditor() {
 							let context = canvas.getContext('2d');
 							context.imageSmoothingEnabled = false;
 							context.drawImage(img, 0, 0, game.screens[0].level.tileSize, game.screens[0].level.tileSize);
-							game.screens[0].level.addSprite(input.files[0].name, canvas, parseInt(input.files[0].name.split('_')[input.files[0].name.split('_').length-1]));
+							game.screens[0].level.addSprite(input.files[0].name, canvas,
+								parseInt(input.files[0].name.split('.')[input.files[0].name.split('.').length-2].split('_')[input.files[0].name.split('_').length-1]));
+							
 							buttons[0].img = canvas;
+							console.log(input.files[0].name.split('.')[input.files[0].name.split('.').length-2].split('_')[input.files[0].name.split('_').length-1]);
 						}
 						img.src = URL.createObjectURL(input.files[0]);
 						input.removeEventListener('change', onUpload);

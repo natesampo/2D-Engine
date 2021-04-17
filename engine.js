@@ -253,7 +253,7 @@ function loadLevel(level, func) {
 				Promise.all(Object.values(promises)).then(function(imageDati) {
 					let sprites = {};
 					for (var i in imageDati) {
-						sprites[imageDati[i][0]] = [imageDati[i][1], parseInt(imageDati[i][0].split('_')[imageDati[i][0].split('_').length-1])];
+						sprites[imageDati[i][0]] = [imageDati[i][1], parseInt(imageDati[i][0].split('.')[imageDati[i][0].split('.').length-2].split('_')[imageDati[i][0].split('_').length-1])];
 					}
 
 					resolve(new Level(levelColor, tileSize, objects, sprites));
