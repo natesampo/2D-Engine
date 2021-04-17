@@ -25,8 +25,8 @@ function launchLevelEditor() {
 	addKeyDownListener(game.inputs);
 	addMouseDownListener(function(which, x, y) {
 		let hitButton = false;
-		let tileX = x / game.screens[0].level.tileSize + game.screens[0].camera.x << 0;
-		let tileY = y / game.screens[0].level.tileSize + game.screens[0].camera.y << 0;
+		let tileX = x / (game.screens[0].level.tileSize * game.screens[0].camera.zoomLevel) + game.screens[0].camera.x << 0;
+		let tileY = y / (game.screens[0].level.tileSize * game.screens[0].camera.zoomLevel) + game.screens[0].camera.y << 0;
 		if (which == 1) {
 			for (var i=0; i<game.screens[0].ui.length; i++) {
 				let button = game.screens[0].ui[i];
