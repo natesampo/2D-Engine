@@ -1,11 +1,11 @@
 color 40 40 40 1
 tileSize 64
-t example_1.jpg 0 0 0
-t example_1.jpg 0 1 0
-t example_1.jpg 0 2 0
-t example_1.jpg 1 0 0
-t example_1.jpg 1 1 0
-t example_1.jpg 1 2 0
-t example_1.jpg 2 0 0
-t example_1.jpg 2 1 0
-t example_1.jpg 2 2 0
+t example_1_1.jpg 0 0 1 1 1 0 0 0 0
+t example_1_1.jpg 0 0 1 1 1 0 0 1 0
+t example_1_1.jpg 0 0 1 1 1 0 0 2 0
+t example_1_1.jpg 0 0 1 1 1 0 1 0 0
+t example_1_1.jpg 0 0 1 1 1 0 1 1 0
+t example_1_1.jpg 0 0 1 1 1 0 1 2 0
+t example_1_1.jpg 0 0 1 1 1 0 2 0 0
+t example_1_1.jpg 0 0 1 1 1 0 2 1 0
+t example_1_1.jpg 0 0 1 1 1 0 2 2 0

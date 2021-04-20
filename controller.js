@@ -1,12 +1,22 @@
-function addKeyDownListener(inputs) {
+function addInputs(inputs) {
 	document.addEventListener('keydown', function(event) {
 		inputs[event.code] = event.key;
 	});
-}
 
-function addKeyUpListener(inputs) {
 	document.addEventListener('keyup', function(event) {
 		delete inputs[event.code];
+	});
+}
+
+function addKeyDownListener(func) {
+	document.addEventListener('keydown', function(event) {
+		func(event.code);
+	});
+}
+
+function addKeyUpListener(func) {
+	document.addEventListener('keyup', function(event) {
+		func(event.code);
 	});
 }
 
@@ -19,6 +29,12 @@ function addMouseDownListener(func) {
 function addMouseUpListener(func) {
 	document.addEventListener('mouseup', function(event) {
 		func(event.which, event.clientX, event.clientY);
+	});
+}
+
+function addMouseMoveListener(func) {
+	document.addEventListener('mousemove', function(event) {
+		func(event.clientX, event.clientY);
 	});
 }
 

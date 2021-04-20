@@ -1,22 +1,25 @@
 class Tile {
-	constructor(x, y, sprite, animationSpeed) {
+	constructor(x, y, sprite, angle, animationSpeed) {
 		this.x = x;
 		this.y = y;
 		this.sprite = sprite;
+		this.angle = angle;
 		this.animationFrame = 0;
 		this.animationSpeed = animationSpeed ? animationSpeed : 0;
 	}
 
 	toString() {
-		return 't ' + this.sprite + ' ' + this.x.toString() + ' ' + this.y.toString() + ' ' + this.animationSpeed.toString();
+		return 't ' + this.sprite[0] + ' ' + this.sprite[1].toString() + ' ' + this.sprite[2].toString() + ' ' + this.sprite[3].toString() + ' ' + this.sprite[4].toString()
+					+ ' ' + this.sprite[5].toString() + ' ' + this.animationSpeed.toString() + ' ' + this.x.toString() + ' ' + this.y.toString() + ' ' + this.angle.toString();
 	}
 }
 
 class GameObject {
-	constructor(x, y, sprite, animationSpeed) {
+	constructor(x, y, sprite, angle, animationSpeed) {
 		this.x = x;
 		this.y = y;
 		this.sprite = sprite;
+		this.angle = angle;
 		this.animationFrame = 0;
 		this.animationSpeed = animationSpeed ? animationSpeed : 0;
 	}
@@ -27,7 +30,8 @@ class GameObject {
 	}
 
 	toString() {
-		return 'o ' + this.sprite + ' ' + this.x.toString() + ' ' + this.y.toString() + ' ' + this.animationSpeed.toString();
+		return 'o ' + this.sprite[0] + ' ' + this.sprite[1].toString() + ' ' + this.sprite[2].toString() + ' ' + this.sprite[3].toString() + ' ' + this.sprite[4].toString()
+					+ ' ' + this.sprite[5].toString() + ' ' + this.animationSpeed.toString() + ' ' + this.x.toString() + ' ' + this.y.toString() + ' ' + this.angle.toString();
 	}
 }
 
@@ -69,10 +73,6 @@ class Level {
 		}
 	}
 
-	addSprite(name, canvas, frames) {
-		this.sprites[name] = [canvas, frames];
-	}
-
 	addObject(obj) {
 		if (obj instanceof Tile) {
 			if (this.map[obj.x] && this.map[obj.x][obj.y]) {
@@ -103,18 +103,18 @@ class Level {
 	}
 
 	removeFromMap(obj) {
-		remove(this.map[obj.x][obj.y], obj);
-		this.checkXYForDeletion(obj.x, obj.y);
+		remove(this.map[obj.x << 0][obj.y << 0], obj);
+		this.checkXYForDeletion(obj.x << 0, obj.y << 0);
 	}
 
 	checkXYForDeletion(x, y) {
-		if (this.map[obj.x]) {
-			if (this.map[obj.x][obj.y] && Object.values(this.map[obj.x][obj.y]).length == 0) {
-				delete this.map[obj.x][obj.y];
+		if (this.map[x]) {
+			if (this.map[x][y] && Object.values(this.map[x][y]).length == 0) {
+				delete this.map[x][y];
 			}
 
-			if (Object.values(this.map[obj.x]).length == 0) {
-				delete this.map[obj.x];
+			if (Object.values(this.map[x]).length == 0) {
+				delete this.map[x];
 			}
 		}
 	}
@@ -129,6 +129,20 @@ class Level {
 		} else {
 			this.map[obj.x][obj.y] = [obj];
 		}
+	}
+
+	toString() {
+		let levelString = 'color ' + this.color['r'] + ' ' + this.color['g'] + ' ' + this.color['b'] + ' ' + this.color['a'] + '\n';
+		levelString += 'tileSize ' + this.tileSize;
+		for (var i in this.map) {
+			for (var j in this.map[i]) {
+				for (var k=0; k<this.map[i][j].length; k++) {
+					levelString += '\n' + this.map[i][j][k].toString();
+				}
+			}
+		}
+
+		return levelString;
 	}
 }
 
@@ -189,6 +203,11 @@ class Game {
 
 function loadSprite(sprite, tileSize) {
 	if (!document.getElementById(sprite)) {
+		let splitPeriod = sprite.split('.');
+		let splitUnderscore = splitPeriod[splitPeriod.length-2].split('_');
+		let sizeX = parseInt(splitUnderscore[splitUnderscore.length-2]);
+		let sizeY = parseInt(splitUnderscore[splitUnderscore.length-1]);
+
 		return new Promise(function(resolve, reject) {
 			let xhr = new XMLHttpRequest();
 			xhr.open('GET', 'sprites/' + sprite);
@@ -199,13 +218,13 @@ function loadSprite(sprite, tileSize) {
 						let canvas = document.createElement('canvas');
 						canvas.classList.add('spriteCanvas');
 						canvas.id = sprite;
-						canvas.width = tileSize;
-						canvas.height = tileSize;
+						canvas.width = sizeX * tileSize;
+						canvas.height = sizeY * tileSize;
 						document.head.appendChild(canvas);
 
 						let context = canvas.getContext('2d');
 						context.imageSmoothingEnabled = false;
-						context.drawImage(img, 0, 0, tileSize, tileSize);
+						context.drawImage(img, 0, 0, sizeX * tileSize, sizeY * tileSize);
 						resolve([sprite, canvas]);
 					}
 					img.src = 'sprites/' + sprite;
@@ -245,7 +264,8 @@ function loadLevel(level, func) {
 							} else if (!sprites[line[1]]) {
 								sprites[line[1]] = sprite;
 							}
-							objects.push(new Tile(parseInt(line[2]), parseInt(line[3]), line[1], parseFloat(line[4])));
+							objects.push(new Tile(parseInt(line[8]), parseInt(line[9]), [line[1], parseInt(line[2]), parseInt(line[3]), parseInt(line[4]), parseInt(line[5]), parseInt(line[6])],
+													parseInt(line[10]), parseFloat(line[7])));
 							break;
 					}
 				}
@@ -253,7 +273,7 @@ function loadLevel(level, func) {
 				Promise.all(Object.values(promises)).then(function(imageDati) {
 					let sprites = {};
 					for (var i in imageDati) {
-						sprites[imageDati[i][0]] = [imageDati[i][1], parseInt(imageDati[i][0].split('.')[imageDati[i][0].split('.').length-2].split('_')[imageDati[i][0].split('_').length-1])];
+						sprites[imageDati[i][0]] = imageDati[i][1];
 					}
 
 					resolve(new Level(levelColor, tileSize, objects, sprites));
@@ -294,18 +314,42 @@ function renderScreen(screen) {
 				if (level.map[i][j]) {
 					for (var k=0; k<level.map[i][j].length; k++) {
 						let obj = level.map[i][j][k];
-						let xPos = (obj.x - camera.x) * tileSize;
-						let yPos = (obj.y - camera.y) * tileSize;
+						let objSpriteData = obj.sprite;
+						let sprite = level.sprites[objSpriteData[0]];
 
-						let spriteData = level.sprites[obj.sprite];
-						let sprite = spriteData[0];
-						let animationFrames = spriteData[1];
-						let frameSize = sprite.width / animationFrames;
-						if (animationFrames > 0) {
-							context.drawImage(sprite, (obj.animationFrame << 0) * frameSize, 0, frameSize, sprite.height, xPos, yPos, tileSize, tileSize);
+						if (sprite) {
+							let xPos = (obj.x - camera.x) * tileSize;
+							let yPos = (obj.y - camera.y) * tileSize;
+
+							let frameSizeX = objSpriteData[3] * tileSize;
+							let frameSizeY = objSpriteData[4] * tileSize;
+
+							let animationFrames = objSpriteData[5];
+
+							if (obj.angle != 0) {
+								context.save();
+								context.translate(xPos + tileSize/2, yPos + tileSize/2);
+								context.rotate(obj.angle * Math.PI/180);
+								xPos = -tileSize/2;
+								yPos = -tileSize/2;
+							}
+
+							if (obj?.opacity != 1) {
+								context.globalAlpha = obj.opacity;
+							}
+
+							context.drawImage(sprite, ((obj.animationFrame << 0) * objSpriteData[3] + objSpriteData[1]) * tileSize, objSpriteData[2] * tileSize, frameSizeX, frameSizeY,
+												xPos, yPos, tileSize, tileSize);
+
 							obj.animationFrame = (obj.animationFrame + obj.animationSpeed) % animationFrames;
-						} else {
-							context.drawImage(sprite, xPos, yPos, tileSize, tileSize);
+
+							if (obj?.opacity != 1) {
+								context.globalAlpha = 1;
+							}
+
+							if (obj.angle != 0) {
+								context.restore();
+							}
 						}
 					}
 				}
@@ -325,7 +369,27 @@ function renderScreen(screen) {
 		context.closePath();
 
 		if (button.img) {
-			context.drawImage(button.img, button.x, button.y, button.width, button.height);
+			let xPos = button.x;
+			let yPos = button.y;
+
+			if (button.angle && button.angle != 0) {
+				context.save();
+				context.translate(button.x + button.width/2, button.y + button.height/2);
+				context.rotate(button.angle * Math.PI/180);
+				xPos = -button.width/2;
+				yPos = -button.height/2;
+			}
+
+			if (button.spriteX === undefined) {
+				context.drawImage(button.img, xPos, yPos, button.width, button.height);
+			} else {
+				context.drawImage(button.img, button.spriteX * tileSize, button.spriteY * tileSize, button.spriteWidth * tileSize, button.spriteWidth * tileSize,
+									 xPos, yPos, button.width, button.height);
+			}
+
+			if (button.angle && button.angle != 0) {
+				context.restore();
+			}
 		}
 
 		context.fillStyle = 'rgba(0, 0, 0, 1)';
@@ -348,8 +412,7 @@ function start(game) {
 
 function launchExample() {
 	let game = new Game();
-	addKeyUpListener(game.inputs);
-	addKeyDownListener(game.inputs);
+	addInputs(game.inputs);
 	preventContextMenu();
 
 	loadLevel('example.lvl', function(level) {
