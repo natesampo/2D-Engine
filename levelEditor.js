@@ -44,21 +44,105 @@ function launchLevelEditor() {
 		context.mozImageSmoothingEnabled = false;
 		context.webkitImageSmoothingEnabled = false;
 
+		let comboRules = {};
 		let savedTiles = [];
+		let comboButtons = [];
 
 		let buttons = [];
 		let buttonsLength = 0;
+
+		let comboRule1;
+		let comboRule2;
+		let comboRule3;
+
+		function createComboRuleButton1() {
+			return new UIButton(canvas.width - 368, 16 + 136 * Object.keys(comboRules).length, 64, 64, undefined, 'New Combo 1', function() {
+				if (previewTile.sprite[0] && previewTile.sprite[0] != this.text) {
+					if (!this.myCombo2) {
+						buttons.push(comboRule2);
+						comboButtons.push(comboRule2);
+						this.myCombo2 = comboRule2;
+						comboRule2.myCombo1 = this;
+					}
+
+					let comboFinished = false;
+					if (this.myCombo2?.myCombo3?.img && comboRules[this.text + this.myCombo2.text]) {
+						comboFinished = true;
+						delete comboRules[this.text + this.myCombo2.text];
+					}
+
+					this.text = previewTile.sprite[0];
+					this.img = game.screens[0].level.sprites[previewTile.sprite[0]];
+
+					if (comboFinished) {
+						comboRules[this.text + this.myCombo2.text] = this.myCombo2.myCombo3.text;
+					}
+				}
+			});
+		}
+
+		function createComboRuleButton2() {
+			return new UIButton(canvas.width - 300, 16 + 136 * Object.keys(comboRules).length, 64, 64, undefined, 'New Combo 2', function() {
+				if (previewTile.sprite[0] && previewTile.sprite[0] != this.text && !(this.myCombo1 && this.myCombo1.text == previewTile.sprite[0])) {
+					if (!this.myCombo3) {
+						buttons.push(comboRule3);
+						comboButtons.push(comboRule3);
+						this.myCombo3 = comboRule3;
+						comboRule3.myCombo2 = this;
+					}
+
+					let comboFinished = false;
+					if (comboRules[this.myCombo1.text + this.text]) {
+						comboFinished = true;
+						delete comboRules[this.myCombo1.text + this.text];
+					}
+
+					this.text = previewTile.sprite[0];
+					this.img = game.screens[0].level.sprites[previewTile.sprite[0]];
+
+					if (comboFinished) {
+						comboRules[this.myCombo1.text + this.text] = this.myCombo3.text;
+					}
+				}
+			});
+		}
+
+		function createComboRuleButton3() {
+			return new UIButton(canvas.width - 334, 84 + 136 * Object.keys(comboRules).length, 64, 64, undefined, 'New Combo 3', function() {
+				if (previewTile.sprite[0] && previewTile.sprite[0] != this.text) {
+					this.text = previewTile.sprite[0];
+					this.img = game.screens[0].level.sprites[previewTile.sprite[0]];
+
+					comboRules[this.myCombo2.myCombo1.text + this.myCombo2.text] = this.myCombo2.myCombo3.text;
+
+					comboRule1 = createComboRuleButton1();
+					comboRule2 = createComboRuleButton2();
+					comboRule3 = createComboRuleButton3();
+
+					comboButtons.push(comboRule1);
+					buttons.push(comboRule1);
+				}
+			});
+		}
+
+		comboRule1 = createComboRuleButton1();
+		comboRule2 = createComboRuleButton2();
+		comboRule3 = createComboRuleButton3();
+
+		comboButtons.push(comboRule1);
+
 		buttons.push(new UIButton(canvas.width - 80, 16, 64, 64, undefined, 'Tile', function() {
 			if (!this.extended) {
-				let spriteCanvi = document.getElementsByClassName('spriteCanvas');
+				buttons.push(...comboButtons);
+
 				for (var i=0; i<savedTiles.length; i++) {
 					buttons.push(savedTiles[i]);
 				}
 
-				buttons.push(new UIButton(canvas.width - 216, 16 + 66*savedTiles.length, 64, 64, undefined, 'Save Tile', function() {
+				buttons.push(new UIButton(canvas.width - 216, 16 + 68*savedTiles.length, 64, 64, undefined, 'Save Tile', function() {
 					if (buttons[0].img) {
 						let ind = savedTiles.length;
-						let savedTileButton = new UIButton(canvas.width - 216, 16 + 66*ind, 64, 64, buttons[0].img, buttons[0].img.id, function() {
+						let savedTileButton = new UIButton(canvas.width - 216, 16 + 68*ind, 64, 64, buttons[0].img, buttons[0].img.id, function() {
 							buttons[0].img = this.img;
 							buttons[0].spriteX = this.spriteX;
 							buttons[0].spriteY = this.spriteY;
@@ -67,6 +151,9 @@ function launchLevelEditor() {
 							buttons[0].frames = this.frames;
 							buttons[0].animationSpeed = this.animationSpeed;
 							previewTile.angle = this.angle;
+
+							buttons[0].extended = false;
+							buttons.length = buttonsLength;
 						});
 						savedTileButton.spriteX = buttons[0].spriteX;
 						savedTileButton.spriteY = buttons[0].spriteY;
@@ -82,8 +169,9 @@ function launchLevelEditor() {
 					}
 				}));
 
+				let spriteCanvi = document.getElementsByClassName('spriteCanvas');
 				for (var i=0; i<spriteCanvi.length; i++) {
-					buttons.push(new UIButton(canvas.width - 148, 16 + 66*i, 64, 64, spriteCanvi[i], spriteCanvi[i].id, function() {
+					buttons.push(new UIButton(canvas.width - 148, 16 + 68*i, 64, 64, spriteCanvi[i], spriteCanvi[i].id, function() {
 						buttons[0].img = this.img;
 						buttons[0].extended = false;
 						buttons.length = buttonsLength;
@@ -122,7 +210,7 @@ function launchLevelEditor() {
 					}));
 				}
 
-				buttons.push(new UIButton(canvas.width - 148, 16 + 66*spriteCanvi.length, 64, 64, undefined, 'New Sprite', function() {
+				buttons.push(new UIButton(canvas.width - 148, 16 + 68*spriteCanvi.length, 64, 64, undefined, 'New Sprite', function() {
 					let input = document.getElementById('inputButton');
 					let onUpload = function(event) {
 						let splitPeriod = input.files[0].name.split('.');
@@ -215,6 +303,7 @@ function launchLevelEditor() {
 					if (x >= button.x && x <= button.x + button.width && y >= button.y && y <= button.y + button.height) {
 						hitButton = true;
 						button.onClick();
+						break;
 					}
 				}
 
@@ -229,6 +318,7 @@ function launchLevelEditor() {
 
 					if (x >= button.x && x <= button.x + button.width && y >= button.y && y <= button.y + button.height) {
 						hitButton = true;
+						break;
 					}
 				}
 
