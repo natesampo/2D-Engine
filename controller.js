@@ -6,6 +6,14 @@ function addInputs(inputs) {
 	document.addEventListener('keyup', function(event) {
 		delete inputs[event.code];
 	});
+
+	document.addEventListener('mousedown', function(event) {
+		inputs['mouse' + event.which] = true;
+	});
+
+	document.addEventListener('mouseup', function(event) {
+		delete inputs['mouse' + event.which];
+	});
 }
 
 function addKeyDownListener(func) {

@@ -264,6 +264,7 @@ function loadLevel(level, func) {
 							} else if (!sprites[line[1]]) {
 								sprites[line[1]] = sprite;
 							}
+							// t sprite spriteX spriteY spriteWidth spriteHeight frames animationSpeed x y angle
 							objects.push(new Tile(parseInt(line[8]), parseInt(line[9]), [line[1], parseInt(line[2]), parseInt(line[3]), parseInt(line[4]), parseInt(line[5]), parseInt(line[6])],
 													parseInt(line[10]), parseFloat(line[7])));
 							break;
