@@ -3,9 +3,12 @@ tileSize 64
 t example_1_1.jpg 0 0 1 1 1 0 0 0 0
 t example_1_1.jpg 0 0 1 1 1 0 0 1 0
 t example_1_1.jpg 0 0 1 1 1 0 0 2 0
+t grass_1_1.png 0 0 1 1 1 0 0 3 0
+t grass-dirt_4_3.png 0 0 1 1 1 0 0 14 0
 t example_1_1.jpg 0 0 1 1 1 0 1 0 0
 t example_1_1.jpg 0 0 1 1 1 0 1 1 0
 t example_1_1.jpg 0 0 1 1 1 0 1 2 0
 t example_1_1.jpg 0 0 1 1 1 0 2 0 0
 t example_1_1.jpg 0 0 1 1 1 0 2 1 0
 t example_1_1.jpg 0 0 1 1 1 0 2 2 0
+t dirt_1_1.png 0 0 1 1 1 0 3 0 0

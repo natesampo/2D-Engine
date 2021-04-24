@@ -91,6 +91,18 @@ class Level {
 		}
 	}
 
+	getXYTile(x, y) {
+		if (this.map[x] && this.map[x][y]) {
+			for (var i=0; i<this.map[x][y].length; i++) {
+				if (this.map[x][y][i] instanceof Tile) {
+					return this.map[x][y][i];
+				}
+			}
+		}
+
+		return null;
+	}
+
 	translateObject(obj, x, y) {
 		let currX = obj.x << 0;
 		let currY = obj.y << 0;
